@@ -17,7 +17,6 @@ services:
 
   app:
     image: ghcr.io/blindpassasjer/gigboy:latest
-    build: .
     restart: unless-stopped
     depends_on:
       postgres:
