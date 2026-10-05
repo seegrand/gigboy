@@ -1,9 +1,12 @@
 # syntax=docker/dockerfile:1
 
+# syntax=docker/dockerfile:1
+
 FROM node:20-slim AS build
 
 WORKDIR /app
 
+# Native dependencies required by bcrypt/sharp on ARMv7
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         python3 \
@@ -17,8 +20,9 @@ RUN npm ci
 
 COPY . .
 
-RUN npm run build \
-    && npx tsc -p server/tsconfig.json
+# Build client and server separately
+RUN npm run build
+RUN npm run server:build
 
 
 FROM node:20-slim AS runtime
@@ -27,6 +31,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Native dependencies required by bcrypt/sharp
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         python3 \
@@ -48,4 +53,5 @@ RUN chmod +x ./docker-entrypoint.sh
 EXPOSE 6168
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
+
 CMD ["node", "dist-server/index.js"]
