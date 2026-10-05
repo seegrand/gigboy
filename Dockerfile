@@ -4,7 +4,6 @@ FROM node:20-slim AS build
 
 WORKDIR /app
 
-# Native dependencies required by bcrypt/sharp on ARMv7
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         python3 \
@@ -12,13 +11,14 @@ RUN apt-get update \
         g++ \
     && rm -rf /var/lib/apt/lists/*
 
+ENV NODE_OPTIONS="--max-old-space-size=512"
+
 COPY package.json package-lock.json ./
 
 RUN npm ci
 
 COPY . .
 
-# Build client and server separately
 RUN npm run build
 RUN npm run server:build
 
